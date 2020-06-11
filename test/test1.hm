@@ -1,0 +1,1 @@
+fun foo(f, g, x) = if f(x == 1) then g(x) else 20
