@@ -133,8 +133,10 @@ void gen_equation(TEnv *e, Node *nd, Vector *equations) {
         TypeEquation *condeq = new_type_eq(nd->ast.ifexpr->cond->type, e->booltype, nd->ast.ifexpr->cond);
         TypeEquation *theneq = new_type_eq(nd->ast.ifexpr->thenbody->type, nd->type, nd->ast.ifexpr->thenbody);
         TypeEquation *elseeq = new_type_eq(nd->ast.ifexpr->elsebody->type, nd->type, nd->ast.ifexpr->elsebody);
+        TypeEquation *then_else_eq = new_type_eq(nd->ast.ifexpr->thenbody->type, nd->ast.ifexpr->elsebody->type, nd);
 
         vector_push_back(equations, condeq);
+        vector_push_back(equations, then_else_eq);
         vector_push_back(equations, theneq);
         vector_push_back(equations, elseeq);
     } else if (nd->kind == ND_FUN) {
@@ -186,7 +188,7 @@ void gen_equation(TEnv *e, Node *nd, Vector *equations) {
 }
 
 bool unify(Type *lhs, Type *rhs, Vector *subst) {
-    if (lhs->kind != T_VAR && lhs->kind == rhs->kind) {
+    if (lhs->kind != T_VAR && lhs->kind != T_FUN && lhs->kind == rhs->kind) {
         return true;
     } else if (lhs->kind == T_VAR && rhs->kind == T_VAR &&
             lhs->tvar == rhs->tvar) {
@@ -220,13 +222,17 @@ bool unify_variable(Type *v, Type *x, Vector *subst) {
     Type *var = vector_at(subst, v->tvar);
     if (var->kind != T_VAR) {
         return unify(var, x, subst);
-    }
-    if (x->kind == T_VAR) {
+    } else if (v->tvar != var->tvar) {
+        return unify(var, x, subst);
+    } else if (x->kind == T_VAR) {
         Type *xvar = vector_at(subst, x->tvar);
         if (xvar->kind != T_VAR) {
             return unify(v, xvar, subst);
+        } else if (xvar->tvar != x->tvar) {
+            return unify(v, xvar, subst);
         }
     }
+
     if (occurs_check(v, x, subst)) {
         return false;
     }
@@ -238,13 +244,15 @@ bool unify_variable(Type *v, Type *x, Vector *subst) {
 bool occurs_check(Type *v, Type *x, Vector *subst) {
     if (x->kind == T_VAR && x->tvar == v->tvar) {
         return true;
-    }
-    if (x->kind == T_VAR) {
+    } else if (x->kind == T_VAR) {
         Type *xvar = vector_at(subst, x->tvar);
         if (xvar->kind != T_VAR) {
             return occurs_check(v, xvar, subst);
+        } else if (xvar->tvar != x->tvar) {
+            return occurs_check(v, xvar, subst);
         }
     }
+
     if (x->kind == T_FUN) {
         bool ret = occurs_check(v, x->ret_type, subst);
         bool arg = false;

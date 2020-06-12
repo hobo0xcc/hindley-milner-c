@@ -1,0 +1,1 @@
+fun f(x, y, z) = if x(y == 1) then y else x(z)

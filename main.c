@@ -46,5 +46,7 @@ int main(int argc, char **argv) {
     }
     printf("%s\n----------\n", buf);
     print_typed_node(nd, subst);
+    printf("\n----------\n");
+    print_subst(subst);
     return 0;
 }
