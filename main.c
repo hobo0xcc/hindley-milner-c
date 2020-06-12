@@ -44,9 +44,6 @@ int main(int argc, char **argv) {
     if (subst == NULL) {
         error("unify failed");
     }
-    printf("%s\n----------\n", buf);
     print_typed_node(nd, subst);
-    printf("\n----------\n");
-    print_subst(subst);
     return 0;
 }
