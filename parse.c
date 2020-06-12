@@ -3,7 +3,7 @@
 PEnv *new_parser_env(Vector *tokens) {
     PEnv *e = malloc(sizeof(PEnv));
     e->tokens = tokens;
-    e->cur = 0; 
+    e->cur = 0;
     return e;
 }
 
@@ -37,18 +37,21 @@ Token *advance(PEnv *e) {
 }
 
 bool match(PEnv *e, int ty) {
-    if (curr(e)->ty == ty) return true;
+    if (curr(e)->ty == ty)
+        return true;
     return false;
 }
 
 bool peek_match(PEnv *e, int offset, int ty) {
-    if (peek(e, offset)->ty == ty) return true;
+    if (peek(e, offset)->ty == ty)
+        return true;
     return false;
 }
 
 Token *expect(PEnv *e, int ty) {
     Token *tk = advance(e);
-    if (tk->ty == ty) return tk;
+    if (tk->ty == ty)
+        return tk;
     error("expected %s but got %s", type_to_string(ty), type_to_string(tk->ty));
     return NULL;
 }
@@ -64,29 +67,29 @@ Node *new_node(int ty, void *ast) {
     nd->kind = ty;
     nd->type = new_type();
     switch (ty) {
-        case ND_NUM:
-            nd->ast.numexpr = ast;
-            break;
-        case ND_VAL:
-            nd->ast.valexpr = ast;
-            break;
-        case ND_BIN:
-            nd->ast.binexpr = ast;
-            break;
-        case ND_IF:
-            nd->ast.ifexpr = ast;
-            break;
-        case ND_APP:
-            nd->ast.appexpr = ast;
-            break;
-        case ND_FUN:
-            nd->ast.funexpr = ast;
-            break;
-        case ND_TOPLEVEL:
-            nd->ast.toplevel = ast;
-            break;
-        default:
-            break;
+    case ND_NUM:
+        nd->ast.numexpr = ast;
+        break;
+    case ND_VAL:
+        nd->ast.valexpr = ast;
+        break;
+    case ND_BIN:
+        nd->ast.binexpr = ast;
+        break;
+    case ND_IF:
+        nd->ast.ifexpr = ast;
+        break;
+    case ND_APP:
+        nd->ast.appexpr = ast;
+        break;
+    case ND_FUN:
+        nd->ast.funexpr = ast;
+        break;
+    case ND_TOPLEVEL:
+        nd->ast.toplevel = ast;
+        break;
+    default:
+        break;
     }
 
     return nd;
@@ -130,7 +133,7 @@ ASTAppExpr *new_appexpr(char *name, Vector *args) {
 ASTFunExpr *new_funexpr(char *name, Vector *args, Node *body) {
     ASTFunExpr *a = malloc(sizeof(ASTFunExpr));
     a->name = name;
-    a->args = args; 
+    a->args = args;
     a->body = body;
     return a;
 }
@@ -143,39 +146,39 @@ ASTTopLevel *new_toplevel(Vector *exprs) {
 
 char *op_to_string(int op) {
     switch (op) {
-        case OP_ADD:
-            return "+";
-        case OP_SUB:
-            return "-";
-        case OP_MUL:
-            return "*";
-        case OP_DIV:
-            return "/";
-        case OP_EQUAL:
-            return "==";
-        case OP_NOT_EQUAL:
-            return "!=";
-        default:
-            return NULL;
+    case OP_ADD:
+        return "+";
+    case OP_SUB:
+        return "-";
+    case OP_MUL:
+        return "*";
+    case OP_DIV:
+        return "/";
+    case OP_EQUAL:
+        return "==";
+    case OP_NOT_EQUAL:
+        return "!=";
+    default:
+        return NULL;
     }
 }
 
 char *node_type_to_string(int ty) {
     switch (ty) {
-        case ND_NUM:
-            return "NUM";
-        case ND_VAL:
-            return "VAL";
-        case ND_BIN:
-            return "BIN";
-        case ND_IF:
-            return "IF";
-        case ND_FUN:
-            return "FUN";
-        case ND_TOPLEVEL:
-            return "TOPLEVEL";
-        default:
-            return NULL;
+    case ND_NUM:
+        return "NUM";
+    case ND_VAL:
+        return "VAL";
+    case ND_BIN:
+        return "BIN";
+    case ND_IF:
+        return "IF";
+    case ND_FUN:
+        return "FUN";
+    case ND_TOPLEVEL:
+        return "TOPLEVEL";
+    default:
+        return NULL;
     }
 }
 
@@ -207,7 +210,8 @@ void print_node(Node *nd) {
         for (int i = 0; i < size; i++) {
             Node *arg = vector_at(nd->ast.appexpr->args, i);
             print_node(arg);
-            if (i != size - 1) printf(", ");
+            if (i != size - 1)
+                printf(", ");
         }
         printf(")");
         printf(")");
@@ -218,7 +222,8 @@ void print_node(Node *nd) {
         for (int i = 0; i < size; i++) {
             char *name = vector_at(nd->ast.funexpr->args, i);
             printf("%s", name);
-            if (i != size - 1) printf(" ");
+            if (i != size - 1)
+                printf(" ");
         }
         printf(" ");
         print_node(nd->ast.funexpr->body);

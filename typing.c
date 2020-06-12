@@ -38,8 +38,7 @@ void annotate_node(TEnv *e, Node *nd) {
         Type *rhs_type = nd->ast.binexpr->rhs->type;
         Type *expr_type = new_type();
         int op = nd->ast.binexpr->op;
-        if (op == OP_ADD || op == OP_SUB ||
-            op == OP_MUL || op == OP_DIV) {
+        if (op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV) {
             expr_type->kind = T_INT;
         } else if (op == OP_EQUAL || op == OP_NOT_EQUAL) {
             expr_type->kind = T_BOOL;
@@ -80,7 +79,8 @@ void annotate_node(TEnv *e, Node *nd) {
             annotate_node(e, arg);
         }
 
-        Type *apptype = new_type(); // map_get(e->symtab, nd->ast.appexpr->name);
+        Type *apptype =
+            new_type(); // map_get(e->symtab, nd->ast.appexpr->name);
         apptype->kind = T_VAR;
         apptype->tvar = e->tvar++;
         if (apptype == NULL) {
@@ -104,18 +104,21 @@ void gen_equation(TEnv *e, Node *nd, Vector *equations) {
         gen_equation(e, nd->ast.binexpr->lhs, equations);
         gen_equation(e, nd->ast.binexpr->rhs, equations);
         int op = nd->ast.binexpr->op;
-        if (op == OP_ADD || op == OP_SUB ||
-            op == OP_MUL || op == OP_DIV) {
+        if (op == OP_ADD || op == OP_SUB || op == OP_MUL || op == OP_DIV) {
             TypeEquation *eq = new_type_eq(nd->type, e->inttype, nd);
-            TypeEquation *lhs_eq = new_type_eq(nd->ast.binexpr->lhs->type, e->inttype, nd->ast.binexpr->lhs);
-            TypeEquation *rhs_eq = new_type_eq(nd->ast.binexpr->rhs->type, e->inttype, nd->ast.binexpr->rhs);
+            TypeEquation *lhs_eq = new_type_eq(
+                nd->ast.binexpr->lhs->type, e->inttype, nd->ast.binexpr->lhs);
+            TypeEquation *rhs_eq = new_type_eq(
+                nd->ast.binexpr->rhs->type, e->inttype, nd->ast.binexpr->rhs);
             vector_push_back(equations, eq);
             vector_push_back(equations, lhs_eq);
             vector_push_back(equations, rhs_eq);
         } else if (op == OP_EQUAL || op == OP_NOT_EQUAL) {
             TypeEquation *eq = new_type_eq(nd->type, e->booltype, nd);
-            TypeEquation *lhs_eq = new_type_eq(nd->ast.binexpr->lhs->type, e->inttype, nd->ast.binexpr->lhs);
-            TypeEquation *rhs_eq = new_type_eq(nd->ast.binexpr->rhs->type, e->inttype, nd->ast.binexpr->rhs);
+            TypeEquation *lhs_eq = new_type_eq(
+                nd->ast.binexpr->lhs->type, e->inttype, nd->ast.binexpr->lhs);
+            TypeEquation *rhs_eq = new_type_eq(
+                nd->ast.binexpr->rhs->type, e->inttype, nd->ast.binexpr->rhs);
             vector_push_back(equations, eq);
             vector_push_back(equations, lhs_eq);
             vector_push_back(equations, rhs_eq);
@@ -123,17 +126,22 @@ void gen_equation(TEnv *e, Node *nd, Vector *equations) {
             error("unknown operator");
         }
 
-        TypeEquation *lhs_rhs_eq = new_type_eq(nd->ast.binexpr->lhs->type, nd->ast.binexpr->rhs->type, nd);
+        TypeEquation *lhs_rhs_eq = new_type_eq(nd->ast.binexpr->lhs->type,
+                                               nd->ast.binexpr->rhs->type, nd);
         vector_push_back(equations, lhs_rhs_eq);
     } else if (nd->kind == ND_IF) {
         gen_equation(e, nd->ast.ifexpr->cond, equations);
         gen_equation(e, nd->ast.ifexpr->thenbody, equations);
         gen_equation(e, nd->ast.ifexpr->elsebody, equations);
 
-        TypeEquation *condeq = new_type_eq(nd->ast.ifexpr->cond->type, e->booltype, nd->ast.ifexpr->cond);
-        TypeEquation *theneq = new_type_eq(nd->ast.ifexpr->thenbody->type, nd->type, nd->ast.ifexpr->thenbody);
-        TypeEquation *elseeq = new_type_eq(nd->ast.ifexpr->elsebody->type, nd->type, nd->ast.ifexpr->elsebody);
-        TypeEquation *then_else_eq = new_type_eq(nd->ast.ifexpr->thenbody->type, nd->ast.ifexpr->elsebody->type, nd);
+        TypeEquation *condeq = new_type_eq(nd->ast.ifexpr->cond->type,
+                                           e->booltype, nd->ast.ifexpr->cond);
+        TypeEquation *theneq = new_type_eq(nd->ast.ifexpr->thenbody->type,
+                                           nd->type, nd->ast.ifexpr->thenbody);
+        TypeEquation *elseeq = new_type_eq(nd->ast.ifexpr->elsebody->type,
+                                           nd->type, nd->ast.ifexpr->elsebody);
+        TypeEquation *then_else_eq = new_type_eq(
+            nd->ast.ifexpr->thenbody->type, nd->ast.ifexpr->elsebody->type, nd);
 
         vector_push_back(equations, condeq);
         vector_push_back(equations, then_else_eq);
@@ -144,7 +152,8 @@ void gen_equation(TEnv *e, Node *nd, Vector *equations) {
         int size = vector_size(nd->ast.funexpr->args);
         for (int i = 0; i < size; i++) {
             char *name = vector_at(nd->ast.funexpr->args, i);
-            vector_push_back(arg_types, map_get(nd->ast.funexpr->arg_types, name));
+            vector_push_back(arg_types,
+                             map_get(nd->ast.funexpr->arg_types, name));
         }
         Type *ty = new_type();
         ty->kind = T_FUN;
@@ -191,7 +200,7 @@ bool unify(Type *lhs, Type *rhs, Vector *subst) {
     if (lhs->kind != T_VAR && lhs->kind != T_FUN && lhs->kind == rhs->kind) {
         return true;
     } else if (lhs->kind == T_VAR && rhs->kind == T_VAR &&
-            lhs->tvar == rhs->tvar) {
+               lhs->tvar == rhs->tvar) {
         return true;
     } else if (lhs->kind == T_VAR) {
         return unify_variable(lhs, rhs, subst);
@@ -202,13 +211,15 @@ bool unify(Type *lhs, Type *rhs, Vector *subst) {
             return false;
         } else {
             bool ok = unify(lhs->ret_type, rhs->ret_type, subst);
-            if (!ok) return false;
+            if (!ok)
+                return false;
             int size = vector_size(lhs->arg_types);
-            for (int i = 0 ; i < size; i++) {
+            for (int i = 0; i < size; i++) {
                 Type *larg_ty = vector_at(lhs->arg_types, i);
                 Type *rarg_ty = vector_at(rhs->arg_types, i);
                 bool ok = unify(larg_ty, rarg_ty, subst);
-                if (!ok) return false;
+                if (!ok)
+                    return false;
             }
 
             return true;
@@ -281,7 +292,8 @@ Vector *unify_all_equations(TEnv *e, Vector *equations) {
     for (int i = 0; i < size; i++) {
         TypeEquation *eq = vector_at(equations, i);
         bool ok = unify(eq->lhs, eq->rhs, subst);
-        if (!ok) return NULL;
+        if (!ok)
+            return NULL;
     }
 
     return subst;
@@ -300,10 +312,14 @@ char *tvar_to_string(int tvar_num) {
 }
 
 void print_type(Type *t) {
-    if (t->kind == T_INT) printf("T_INT");
-    else if (t->kind == T_BOOL) printf("T_BOOL");
-    else if (t->kind == T_VAR) printf("T_VAR%d", t->tvar);
-    else if (t->kind == T_APP) printf("T_APP");
+    if (t->kind == T_INT)
+        printf("T_INT");
+    else if (t->kind == T_BOOL)
+        printf("T_BOOL");
+    else if (t->kind == T_VAR)
+        printf("T_VAR%d", t->tvar);
+    else if (t->kind == T_APP)
+        printf("T_APP");
     else if (t->kind == T_FUN) {
         printf("(T_FUN (");
         int size = vector_size(t->arg_types);
@@ -316,8 +332,8 @@ void print_type(Type *t) {
         print_type(t->ret_type);
         printf(")");
         printf(")");
-    }
-    else printf("unknown type");
+    } else
+        printf("unknown type");
 }
 
 void print_type_equations(Vector *equations) {
@@ -376,7 +392,7 @@ void print_subst(Vector *subst) {
 Type *get_real_type(Type *t, Vector *subst) {
     if (t->kind == T_FUN) {
         int size = vector_size(t->arg_types);
-        for (int i = 0 ; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             Type *arg_ty = vector_at(t->arg_types, i);
             Type *real = get_real_type(arg_ty, subst);
             vector_set(t->arg_types, i, real);

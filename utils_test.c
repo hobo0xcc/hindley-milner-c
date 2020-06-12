@@ -3,7 +3,9 @@
 void test_vector() {
     Vector *vec = new_vector();
     int a, b, c;
-    a = 1; b = 2; c = 3;
+    a = 1;
+    b = 2;
+    c = 3;
     vector_push_back(vec, (void *)&a);
     vector_push_back(vec, (void *)&b);
     vector_push_back(vec, (void *)&c);
