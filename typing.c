@@ -21,6 +21,11 @@ TypeEquation *new_type_eq(Type *lhs, Type *rhs, Node *orig) {
     return eq;
 }
 
+/* Set initial types to ast node `nd`.
+ * For instance, if node has integer the node is typed with type T_INT.
+ * If node's type is currently undecidable,
+ * it is typed with T_VAR, which means the type has a Type variable.
+ * */
 void annotate_node(TEnv *e, Node *nd) {
     if (nd->kind == ND_NUM) {
         nd->type->kind = T_INT;
@@ -96,6 +101,9 @@ void annotate_node(TEnv *e, Node *nd) {
     }
 }
 
+/* Generate Type equations.
+ * Type equations are used to inference types by unifying those equations.
+ * */
 void gen_equation(TEnv *e, Node *nd, Vector *equations) {
     if (nd->kind == ND_NUM) {
         TypeEquation *eq = new_type_eq(nd->type, e->inttype, nd);
@@ -196,6 +204,9 @@ void gen_equation(TEnv *e, Node *nd, Vector *equations) {
     }
 }
 
+/*
+ * Unify equations to generate substitutions of type variables.
+ * */
 bool unify(Type *lhs, Type *rhs, Vector *subst) {
     if (lhs->kind != T_VAR && lhs->kind != T_FUN && lhs->kind == rhs->kind) {
         return true;
@@ -229,6 +240,9 @@ bool unify(Type *lhs, Type *rhs, Vector *subst) {
     return false;
 }
 
+/*
+ * Unify type variables.
+ * */
 bool unify_variable(Type *v, Type *x, Vector *subst) {
     Type *var = vector_at(subst, v->tvar);
     if (var->kind != T_VAR) {
@@ -244,14 +258,19 @@ bool unify_variable(Type *v, Type *x, Vector *subst) {
         }
     }
 
+    // If type variable `v` occurs inside type `x`, the equation is invalid.
+    // This will avoid some corner case in unification. See
+    // https://norvig.com/unify-bug.pdf.
     if (occurs_check(v, x, subst)) {
         return false;
     }
 
+    // Set type `x` to substitution of type variable `v`.
     vector_set(subst, v->tvar, x);
     return true;
 }
 
+// If type variable `v` occurs anywhere inside type `x`, return true.
 bool occurs_check(Type *v, Type *x, Vector *subst) {
     if (x->kind == T_VAR && x->tvar == v->tvar) {
         return true;
