@@ -24,7 +24,7 @@ TypeEquation *new_type_eq(Type *lhs, Type *rhs, Node *orig) {
 /* Set initial types to ast node `nd`.
  * For instance, if node has integer the node is typed with type T_INT.
  * If node's type is currently undecidable,
- * it is typed with T_VAR, which means the type has a Type variable.
+ * it is typed with T_VAR, which means that the type has a Type variable.
  * */
 void annotate_node(TEnv *e, Node *nd) {
     if (nd->kind == ND_NUM) {
@@ -258,9 +258,8 @@ bool unify_variable(Type *v, Type *x, Vector *subst) {
         }
     }
 
-    // If type variable `v` occurs inside type `x`, the equation is invalid.
-    // This will avoid some corner case in unification. See
-    // https://norvig.com/unify-bug.pdf.
+    // If type variable `v` occurs inside type `x`, unify function may unifying infinitely.
+    // This avoids that potential.
     if (occurs_check(v, x, subst)) {
         return false;
     }
